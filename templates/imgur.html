@@ -1,0 +1,9 @@
+<form>
+    <input type="text" pattern="[a-zA-Z0-9]{5}" name="s" value="{{ s }}" required />
+    <input type="submit" />
+</form>
+<ul>
+{% for url in urls if urls is not none %}
+  <li><a href="{{ url }}">{{ url.replace('http://imgur.com/', '') }}</a></li>
+{% endfor %}
+</ul>
