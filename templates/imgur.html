@@ -1,12 +1,21 @@
-<title>Imgur Game</title>
-<h1>Imgur Game</h1>
-<p>Find funny contents by URL. Try <a href="/?s=butts">butts</a>.</p>
-<form>
-    <input type="text" pattern="[a-zA-Z0-9]{5}" name="s" title="5 letters or numbers" value="{{ s }}" required />
-    <input type="submit" />
-</form>
-<ul>
-{% for url in urls if urls is not none %}
-  <li><a href="{{ url }}" target="_newtab">{{ url|replace('http://imgur.com/', '') }}</a></li>
-{% endfor %}
-</ul>
+<head>
+    <style>
+    img {
+        max-width: 90%;
+    }
+    </style>
+    <title>Imgur Game</title>
+</head>
+<body>
+    <h1>Imgur Game</h1>
+    <p>Find funny contents by URL. Try <a href="/?s=butts">butts</a>.</p>
+    <form>
+        <input type="text" pattern="[a-zA-Z0-9]{5}" name="s" title="5 letters or numbers" value="{{ s }}" required />
+        <input type="submit" />
+    </form>
+    <ul>
+    {% for url in urls if urls is not none %}
+      <li><a href="{{ url.url }}" target="_newtab">{{ url.id }}<br><img src="{{ url.direct }}" alt="{{ url.id }}"/></a></li>
+    {% endfor %}
+    </ul>
+</body>

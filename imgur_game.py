@@ -3,6 +3,11 @@
 
 from __future__ import print_function
 from urllib3 import PoolManager
+from pyimgur import Imgur
+from requests.exceptions import HTTPError
+
+
+CLIENT_ID = 'a1dc76d0afc2f34'
 
 
 def all_casings(input_string):
@@ -44,6 +49,20 @@ def imgur_game(s):
     permutations = all_casings(s)
     urls = ('http://imgur.com/'+p for p in permutations)
     return exists(urls)
+
+
+def imgur_game2(s):
+    if len(s) != 5:
+        raise RuntimeError('Imgur images are 5 letter long paths. ' +
+                           '{} is {} characters long.'.format(s, len(s)))
+    permutations = all_casings(s)
+    im = Imgur(CLIENT_ID)
+    for i in sorted(permutations):
+        try:
+            image = im.get_image(i)
+            yield { 'url': 'http://imgur.com/'+i, 'direct': image.link, 'id': i }
+        except HTTPError:
+            pass
 
 
 def format(it, columns=3):
