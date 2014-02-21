@@ -78,6 +78,7 @@ def imgur_game_api(s):
                 'url': 'http://imgur.com/'+i,
                 'direct': image.link,
                 'id': i,
+                'thumb': image.link_big_square,
             }
         except HTTPError:
             pass

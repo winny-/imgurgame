@@ -1,16 +1,8 @@
 <head>
     <style>
-    * {
-        padding: 0;
-        margin: 0;
-    }
     body {
         font-family: 'Helvetica Nue', Helvetica, sans-serif;
         background-color: rgb(240, 248, 255);
-    }
-    img {
-        max-width: 80%;
-        max-height: 100%;
     }
     #content {
         padding: 10px 0;
@@ -18,6 +10,7 @@
         margin: 0 auto;
     }
     #footer {
+        display: block;
         font-size: .7em;
     }
     form {
@@ -26,31 +19,21 @@
     form p {
         display: inline;
     }
-    div.image {
-        background-color: rgb(230, 230, 250);
-    }
-    div.image {
-        /*height: 400px;*/
-        padding: 5px 0;
-        text-align: center;
-    }
-    .clearfix {
-        overflow: auto;
-    }
-    img {
-        float: right;
-    }
     a {
         text-decoration: none;
     }
     a:hover, a:focus {
         text-decoration: underline;
     }
-    .box2 {
-        display: inline-block;
-        width: 300px;
-        height: 200px;
-        margin: 1em;
+    div#images {
+        display:block;
+        max-width:800px;
+        margin:30px;
+        overflow: hidden;
+    }
+    img.image {
+        float:left;
+        padding:10px;
     }
     </style>
     <title>Imgur Game{% if s != '' %} :: {{ s }}{% endif %}</title>
@@ -67,18 +50,15 @@
             </form>
         </div>
 
-        <div id="images">
-        {% for url in urls if urls is not none %}
-        <div id="{{ url.id }}" class="image clearfix box2">
-            <a href="{{ url.url }}"><img src="{{ url.direct }}" alt="{{ url.id }}"/></a>
-            <p><a href="{{ url.url }}" target="_newtab">{{ url.id }}</a></p><p>(<a href="{{ url.direct }}">direct</a>)</p>
-        </div>
-        {% endfor %}
-        </div>
+        {% if s != '' %}<div id="images">{% endif %}
+            {% for url in urls if urls is not none %}
+            <a href="{{ url.url }}"><img class="image" id="{{ url.id }}" src="{{ url.thumb }}" alt="{{ url.id }}" /></a>
+            {% endfor %}
+        {%if s != '' %}</div>{% endif %}
 
         <hr>
         <div id="footer">
-            <p><i>DISCLAIMER: Content is not filtered and is often NOT SAFE FOR WORK.</i></p>
+            <p><i>DISCLAIMER: Content is not filtered and is often <strong>NOT SAFE FOR WORK</strong>.</i></p>
             <p>A little toy brought to you by <a href="http://winstonone.com/">Winston Weinert</a>.&nbsp;&middot;&nbsp;
             Imgur Game's source is <a href="https://github.com/winny-/imgurgame">on Github</a>.</p>
         </div>
