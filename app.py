@@ -2,6 +2,7 @@ from flask import Flask, render_template, request
 import imgur_game
 from store import redis, redis_url
 import sys
+from time import time
 
 
 TTL = 60 * 60 * 24
@@ -32,8 +33,8 @@ def game():
     return render_template('imgur.html', urls=urls, s=s)
 
 
-def log(*args):
-    print args[0] % (len(args) > 1 and args[1:] or [])
+def log(message):
+    print(str(time())+' '+message)
     sys.stdout.flush()
 
 
