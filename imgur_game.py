@@ -71,8 +71,7 @@ def imgur_game_api(s):
                            '{} is {} characters long.'.format(s, len(s)))
     permutations = all_casings_sorted(s)
     im = Imgur(CLIENT_ID)
-    existing_urls = exists('http://imgur.com/'+p for p in permutations)
-    for i in (id_.replace('http://imgur.com/', '', 1) for id_ in existing_urls):
+    for i in permutations:
         try:
             image = im.get_image(i)
             yield {
