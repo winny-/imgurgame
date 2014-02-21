@@ -11,6 +11,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def game():
+    t = time()
     s = request.args.get('s', '')
     canonical_s = s.lower()
     log('Redis url {}'.format(redis_url))
@@ -30,7 +31,8 @@ def game():
     else:
         urls = []
     log('Rendering template imgur.html')
-    return render_template('imgur.html', urls=urls, s=s)
+    t = time() - t
+    return render_template('imgur.html', urls=urls, s=s, time=t)
 
 
 def log(message):
