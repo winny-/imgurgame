@@ -3,11 +3,18 @@
 
 from __future__ import print_function
 from urllib3 import PoolManager
-from pyimgur import Imgur
+# Disabling GPL code until resolved.
+# https://github.com/winny-/imgurgame/issues/1
+# from pyimgur import Imgur
 from requests.exceptions import HTTPError
+from re import compile, search
+from collections import namedtuple
 
 
 CLIENT_ID = 'a1dc76d0afc2f34'
+
+
+Image = namedtuple('Image', ('id', 'type'))
 
 
 def all_casings(input_string):
@@ -29,34 +36,30 @@ def all_casings(input_string):
                 yield upper + sub_casing
 
 
-def all_casings_sorted(input_string, reverse=True):
-    """Convenience function calls sorted on all_casings."""
-    return sorted(all_casings(input_string), reverse=reverse)
+def build_search(s):
+    if len(s) != 5:
+        raise RuntimeError('Imgur images are 5 letter long paths. '
+                           '{} is {} characters long.'.format(s, len(s)))
+    permutations = all_casings(s)
+    return permutations
 
 
-def exists(urls):
-    """Yields each url in urls that exists (returns HTTP status 200)."""
-    http = PoolManager(40)
-    for url in urls:
-        r = http.request('HEAD', url)
-        if r.status == 200:
-            yield url
-
-
-def imgur_game_http(s):
+def game_http(s):
     """
     Take string and check for imgur URLs. Must be 5 characters long.
     Returns URLs that exist.
     """
-    if len(s) != 5:
-        raise RuntimeError('Imgur images are 5 letter long paths. ' +
-                           '{} is {} characters long.'.format(s, len(s)))
-    permutations = all_casings_sorted(s)
-    urls = ('http://imgur.com/'+p for p in permutations)
-    return exists(urls)
+    possible_ids = build_search(s)
+    file_ext = compile(r'[a-zA-Z0-9]{5}\.(png|jpg|jpeg|gif)')
+    http = PoolManager(40)
+    for id_ in possible_ids:
+        r = http.request('GET', 'http://imgur.com/'+id_)
+        if r.status == 200:
+            found_ext = search(file_ext, r.data).group(1)
+            yield Image(id_, found_ext)
 
 
-def imgur_game_api(s):
+def game_api(s):
     """
     Take string and check for imgur URLs. Must be 5 characters long.
     Returns dicts representing URLs that exist. Dict looks like this:
@@ -66,14 +69,17 @@ def imgur_game_api(s):
         'id': 'daURL'
     }
     """
+    raise NotImplemented()
     if len(s) != 5:
-        raise RuntimeError('Imgur images are 5 letter long paths. ' +
+        raise RuntimeError('Imgur images are 5 letter long paths. '
                            '{} is {} characters long.'.format(s, len(s)))
     permutations = all_casings_sorted(s)
     im = Imgur(CLIENT_ID)
     for i in permutations:
         try:
             image = im.get_image(i)
+            if image.link == 'http://i.imgur.com/removed.png':
+                continue
             yield {
                 'url': 'http://imgur.com/'+i,
                 'direct': image.link,
@@ -84,9 +90,10 @@ def imgur_game_api(s):
             pass
 
 
-def format(it, columns=3):
+def format(it, columns=3, sort=True):
     """Format iterable into columns. columns=3 by default."""
     c = 1
+    it = sorted(it, reverse=True) if sort else it
     for i in it:
         if c < columns:
             print(i, end='  ')
@@ -103,4 +110,5 @@ if __name__ == '__main__':
 
     args = sys.argv[1:]
     for arg in args:
-        format(imgur_game_http(arg))
+        valid_urls = (valid[0] for valid in game_http(arg))
+        format(valid_urls)

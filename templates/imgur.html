@@ -51,8 +51,11 @@
         </div>
 
         {% if s != '' %}<div id="images">{% endif %}
-            {% for url in urls if urls is not none %}
-            <a href="{{ url.url }}"><img class="image" id="{{ url.id }}" src="{{ url.thumb }}" alt="{{ url.id }}" /></a>
+            {% for image in images|sort(reverse=True) if images is not none %}
+            <a href="{{ 'https://imgur.com/%s.%s'|format(image.id, image.type) }}">
+                <img class="image" id="{{ image.id }}" src="{{ 'https://imgur.com/%sb.%s'|format(image.id, image.type) }}"
+                alt="{{ image.id }}" title="{{ image.id }}" />
+            </a>
             {% endfor %}
         {%if s != '' %}</div>{% endif %}
 

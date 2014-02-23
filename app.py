@@ -1,8 +1,9 @@
 from flask import Flask, render_template, request
-import imgur_game
+from imgur_game import game_http
 from store import redis, redis_url
 import sys
 from time import time
+from pickle import loads, dumps
 
 
 TTL = 60 * 60 * 24
@@ -11,28 +12,29 @@ app = Flask(__name__)
 
 @app.route('/')
 def game():
-    t = time()
+    start_time = time()
     s = request.args.get('s', '')
     canonical_s = s.lower()
-    log('Redis url {}'.format(redis_url))
+
     log('Processing {} canonical {}'.format(s, canonical_s))
     if len(s) == 5:
-        url_s = redis.get(canonical_s)
-        log('Passed length check. Redis reports {}.'.format(url_s))
-        if not url_s:
+        cached_images = redis.get(canonical_s)
+        log('Passed length check.')
+        if not cached_images:
             log('Fetching images, not found in cache.')
-            urls = list(imgur_game.imgur_game_api(s))
-            log('Fetched urls {} in list'.format(len(urls)))
-            redis.setex(canonical_s, urls, TTL)
+            images = list(game_http(s))
+            log('Fetched images {} in list'.format(len(images)))
+            redis.setex(canonical_s, dumps(images), TTL)
             log('Saved to Redis')
         else:
             log('Found in cache.')
-            urls = eval(url_s)
+            images = loads(cached_images)
     else:
-        urls = []
+        images = []
+
     log('Rendering template imgur.html')
-    t = time() - t
-    return render_template('imgur.html', urls=urls, s=s, time=t)
+    end_time = time() - start_time
+    return render_template('imgur.html', images=images, s=s, time=end_time)
 
 
 def log(message):
