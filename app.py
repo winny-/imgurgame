@@ -1,9 +1,10 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 from imgur_game import game_http
-from store import redis, redis_url
+from store import redis
 import sys
 from time import time
 from pickle import loads, dumps
+from random import randrange
 
 
 TTL = 60 * 60 * 24
@@ -35,6 +36,12 @@ def game():
     log('Rendering template imgur.html')
     end_time = time() - start_time
     return render_template('imgur.html', images=images, s=s, time=end_time)
+
+@app.route('/random')
+def random_game():
+    a, z = ord('a'), ord('z')
+    s = ''.join(chr(randrange(a, z+1)) for _ in range(5))
+    return redirect(url_for('game', s=s))
 
 
 def log(message):
