@@ -2,12 +2,12 @@
 
 
 from __future__ import print_function
-from urllib3 import PoolManager
+from urllib3 import connection_from_url
+from urllib3.exceptions import MaxRetryError
 # Disabling GPL code until resolved.
 # https://github.com/winny-/imgurgame/issues/1
 # from pyimgur import Imgur
 from requests.exceptions import HTTPError
-from re import compile, search
 from collections import namedtuple
 
 
@@ -50,13 +50,15 @@ def game_http(s):
     Returns URLs that exist.
     """
     possible_ids = build_search(s)
-    file_ext = compile(r'[a-zA-Z0-9]{5}\.(png|jpg|jpeg|gif)')
-    http = PoolManager(40)
+    conn = connection_from_url('http://i.imgur.com')
     for id_ in possible_ids:
-        r = http.request('GET', 'http://imgur.com/'+id_)
-        if r.status == 200:
-            found_ext = search(file_ext, r.data).group(1)
-            yield Image(id_, found_ext)
+        try:
+            r = conn.request('HEAD', ''.join(['/', id_, '.png']), retries=False)
+        except MaxRetryError:
+            pass
+        else:
+            if r.status == 200 and 'content-type' in r.headers:
+                yield Image(id_, r.headers['content-type'].split('/')[-1])
 
 
 def game_api(s):
